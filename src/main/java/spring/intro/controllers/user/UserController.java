@@ -30,10 +30,7 @@ public class UserController {
 
     @GetMapping("/{id}")
     public UserResponseDto getUserById(@PathVariable Long id) {
-        List<User> allUsers = userService.listUsers();
-        User user = allUsers.stream()
-                .filter(u -> u.getId().equals(id))
-                .findFirst().get();
+        User user = userService.getById(id);
         return changeToResponseDto(user);
     }
 
