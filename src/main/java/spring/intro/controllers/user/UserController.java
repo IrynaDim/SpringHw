@@ -2,12 +2,11 @@ package spring.intro.controllers.user;
 
 import java.util.List;
 import java.util.stream.Collectors;
-import org.springframework.context.annotation.AnnotationConfigApplicationContext;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
-import spring.intro.config.AppConfig;
 import spring.intro.dto.UserResponseDto;
 import spring.intro.model.User;
 import spring.intro.service.UserService;
@@ -15,9 +14,12 @@ import spring.intro.service.UserService;
 @RestController
 @RequestMapping("/user")
 public class UserController {
-    AnnotationConfigApplicationContext context =
-            new AnnotationConfigApplicationContext(AppConfig.class);
-    UserService userService = context.getBean(UserService.class);
+    private final UserService userService;
+
+    @Autowired
+    public UserController(UserService userService) {
+        this.userService = userService;
+    }
 
     @GetMapping("/inject")
     public String inject() {
@@ -31,23 +33,22 @@ public class UserController {
     @GetMapping("/{id}")
     public UserResponseDto getUserById(@PathVariable Long id) {
         User user = userService.getById(id);
-        return changeToResponseDto(user);
+        return convertToResponseDto(user);
     }
 
     @GetMapping
     public List<UserResponseDto> getAll() {
-        List<User> allUsers = userService.listUsers();
-        List<UserResponseDto> allUsersDto = allUsers.stream()
-                .map(user -> changeToResponseDto(user))
+        return userService.listUsers().stream()
+                .map(user -> convertToResponseDto(user))
                 .collect(Collectors.toList());
-        return allUsersDto;
     }
 
-    private UserResponseDto changeToResponseDto(User user) {
+    private UserResponseDto convertToResponseDto(User user) {
         UserResponseDto userResponseDto = new UserResponseDto();
         userResponseDto.setName(user.getFirstName());
         userResponseDto.setLastName(user.getLastName());
         userResponseDto.setEmail(user.getEmail());
         return userResponseDto;
     }
+
 }
